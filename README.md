@@ -9,7 +9,7 @@ Original by [Kader Bouyakoub](https://github.com/bkader) | Fork & new features b
 
 ![KRT Demo](ezgif-38c0b685c6671ea2.gif)
 
-![KRT Overview](WoWScrnShot_062226_174951.jpg)
+![KRT Overview](screenshot.jpg)
 
 ## What's New in This Fork
 
