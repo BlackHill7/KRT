@@ -105,7 +105,7 @@ If you use ElvUI + AddOnSkins and want KRT to match your UI theme:
 2. Type `/reload` in-game
 3. In ElvUI settings, go to **AddOnSkins** → enable **KRT**
 
-> **Note:** This only works if you already have [ElvUI](https://www.tukui.org/) and [AddOnSkins](https://www.tukui.org/addons.php) installed.
+> **Note:** This only works if you already have [ElvUI](https://github.com/ElvUI-WotLK/ElvUI) and [AddOnSkins](https://github.com/ElvUI-WotLK/ElvUI_AddOnSkins) installed.
 
 ---
 
