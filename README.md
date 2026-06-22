@@ -6,8 +6,6 @@ Game Version: **3.3.5a**
 Original by [Kader Bouyakoub](https://github.com/bkader) | Fork & new features by [BlackHill7](https://github.com/BlackHill7/KRT)
 
 ---
-![KRT Demo](ezgif-38c0b685c6671ea2.gif)
-
 ![KRT Overview](screenshot.jpg)
 
 ## What's New in This Fork
