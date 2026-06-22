@@ -9,6 +9,8 @@ Original by [Kader Bouyakoub](https://github.com/bkader) | Fork & new features b
 
 ![KRT Demo](ezgif-38c0b685c6671ea2.gif)
 
+![KRT Overview](WoWScrnShot_062226_174951.jpg)
+
 ## What's New in This Fork
 
 ### GearScore Support in LFM Spammer
@@ -38,6 +40,8 @@ Spec changes now persist **globally across all raids** instead of per-raid:
 - **Shift-click or left-click** a player name in chat to auto-fill the input
 - Rapid-fire entry mode — saving stays in add mode for quick multi-entry
 - Context-sensitive Edit button (Cancel / Save / Edit)
+
+![MS Changes Demo](ms-changes.gif)
 
 ### Clear All Raid History
 New **"Clear All"** button in the Logger — bulk-deletes all past raid history with a confirmation dialog. The current active raid is always preserved.
