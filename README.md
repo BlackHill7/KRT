@@ -94,9 +94,18 @@ GitHub and Discord links in the config panel are now clickable input fields. Cli
 
 ## Installation
 
+### KRT (Required)
 1. Download or clone this repository
 2. Place the `!KRT` folder into `World of Warcraft/Interface/AddOns/`
 3. Restart WoW or type `/reload`
+
+### ElvUI Skin (Optional)
+If you use ElvUI + AddOnSkins and want KRT to match your UI theme:
+1. Copy `ElvUI_Skin/KRT.lua` into your `ElvUI_AddOnSkins/Skins/Addons/` folder
+2. Type `/reload` in-game
+3. In ElvUI settings, go to **AddOnSkins** → enable **KRT**
+
+> **Note:** This only works if you already have [ElvUI](https://www.tukui.org/) and [AddOnSkins](https://www.tukui.org/addons.php) installed.
 
 ---
 
