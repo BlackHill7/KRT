@@ -71,7 +71,6 @@ GitHub and Discord links in the config panel are now clickable input fields. Cli
 - Loot whispers gated behind the `lootWhispers` option
 - LFM pause/resume timing fixed (pauses instead of stopping)
 - French localization typo fixed ("bar" to "par")
-- Slider bar renders correctly without ElvUI/AddOnSkins
 - Config panel uses relative anchoring — layout adapts when frame height changes
 - Edit button in MS Changes shows "Cancel" / "Save" / "Edit" based on context
 - Preview character counter updates in real-time
