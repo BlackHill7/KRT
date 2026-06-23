@@ -98,7 +98,7 @@ GitHub and Discord links in the config panel are now clickable input fields. Cli
 
 ### ElvUI Skin (Optional)
 If you use ElvUI + AddOnSkins and want KRT to match your UI theme:
-1. Copy `ElvUI_Skin/KRT.lua` into your `ElvUI_AddOnSkins/Skins/Addons/` folder
+1. Copy the `ElvUI_AddOnSkins` folder from this repo into your `World of Warcraft/Interface/AddOns/` folder
 2. Type `/reload` in-game
 3. In ElvUI settings, go to **AddOnSkins** → enable **KRT**
 
