@@ -32,7 +32,7 @@ local trader, winner
 local manualWinner = false
 local holder, banker, disenchanter
 local lootOpened      = false
-local rollTypes       = {mainspec=1, offspec=2, free=3, bank=4, disenchant=5, hold=6, dkp=7}
+	local rollTypes       = {mainspec=1, offspec=2, free=3, bank=4, disenchant=5, hold=6, dkp=7, ml=8}
 local currentRollType = 3
 local currentRollItem = 0
 local fromInventory   = false
@@ -53,6 +53,7 @@ local lootTypesColored = {
 	RED_FONT_COLOR_CODE..L.BtnDisenchant..FONT_COLOR_CODE_CLOSE,
 	HIGHLIGHT_FONT_COLOR_CODE..L.BtnHold..FONT_COLOR_CODE_CLOSE,
 	GREEN_FONT_COLOR_CODE.."DKP"..FONT_COLOR_CODE_CLOSE,
+	"|cff00ffffML"..FONT_COLOR_CODE_CLOSE,
 }
 -- Items color
 local itemColors = {
@@ -540,7 +541,13 @@ do
 		if itemRarity < lootThreshold then return end
 		if ignoredItems[itemId] then return end
 		if KRT_LastBoss == nil then self:AddBoss("_TrashMob_") end
-		if not rollType then rollType = currentRollType end
+		if not rollType then
+			if player == unitName then
+				rollType = rollTypes.ml
+			else
+				rollType = currentRollType
+			end
+		end
 		if not rollValue then rollValue = addon:HighestRoll() end
 		local lootInfo = {
 			itemId      = itemId,
@@ -828,16 +835,15 @@ do
 		return class
 	end
 
-	-- Get player UnitID
+	-- Get player UnitID (live raid roster, not saved index):
 	function addon:GetUnitID(name)
-		local players = Raid:GetPlayers()
 		local id = "none"
-		if players then
-			for i, p in ipairs(players) do
-				if p.name == name then
-					id = "raid"..tostring(i)
-					break
-				end
+		local numRaid = GetNumRaidMembers()
+		for i = 1, numRaid do
+			local unitName = GetRaidRosterInfo(i)
+			if unitName == name then
+				id = "raid"..tostring(i)
+				break
 			end
 		end
 		return id
@@ -3382,6 +3388,61 @@ do
 		localized = true
 	end
 
+	function Spammer:LayoutBottom()
+		local gsAchBtn = _G[frameName.."GsAchNeeded"]
+		if not gsAchBtn then return end
+
+		local gsBottom = gsAchBtn:GetBottom() or 0
+		local frameBottom = UISpammer:GetBottom() or 0
+		local previewY = gsBottom - frameBottom - 15
+
+		local previewStr = _G[frameName.."PreviewStr"]
+		if previewStr then
+			previewStr:ClearAllPoints()
+			previewStr:SetPoint("TOPLEFT", UISpammer, "BOTTOMLEFT", 20, previewY)
+			previewStr:SetPoint("TOPRIGHT", UISpammer, "BOTTOMRIGHT", -15, previewY)
+		end
+
+		local lengthStr = _G[frameName.."Length"]
+		if lengthStr then
+			lengthStr:ClearAllPoints()
+			lengthStr:SetPoint("TOPRIGHT", UISpammer, "BOTTOMRIGHT", -15, previewY)
+		end
+
+		local outputStr = _G[frameName.."Output"]
+		if outputStr then
+			outputStr:ClearAllPoints()
+			outputStr:SetPoint("TOPLEFT", UISpammer, "BOTTOMLEFT", 20, previewY - 20)
+			outputStr:SetPoint("TOPRIGHT", UISpammer, "BOTTOMRIGHT", -15, previewY - 20)
+
+			local outBottom = outputStr:GetBottom()
+			local frmBottom = UISpammer:GetBottom()
+			local frmHeight = UISpammer:GetHeight()
+			local baseHeight = 452
+
+			if outBottom and frmBottom then
+				if outBottom < frmBottom - 1 then
+					local overflow = frmBottom - outBottom + 15
+					UISpammer:SetHeight(frmHeight + overflow)
+					local pt, rel, _, x, y = UISpammer:GetPoint(1)
+					UISpammer:ClearAllPoints()
+					UISpammer:SetPoint(pt, rel, x, y - overflow / 2)
+					Spammer:LayoutBottom()
+				elseif outBottom > frmBottom + 25 and frmHeight > baseHeight + 1 then
+					local excess = outBottom - frmBottom - 15
+					local shrink = math.min(excess, frmHeight - baseHeight)
+					if shrink > 1 then
+						UISpammer:SetHeight(frmHeight - shrink)
+						local pt, rel, _, x, y = UISpammer:GetPoint(1)
+						UISpammer:ClearAllPoints()
+						UISpammer:SetPoint(pt, rel, x, y + shrink / 2)
+						Spammer:LayoutBottom()
+					end
+				end
+			end
+		end
+	end
+
 	-- OnUpdate frame:
 	function UpdateUIFrame(self, elapsed)
 		LocalizeUIFrame()
@@ -3446,6 +3507,15 @@ do
 				end
 
 				if temp ~= "LFM" then
+					if KRT_Spammer.gsAchNeeded then
+						local minGS = _G[frameName.."MinGS"]:GetText():trim()
+						if minGS ~= "" then
+							temp = temp .. " +" .. minGS .. " - /w gs+ach"
+						else
+							temp = temp .. " - /w gs+ach"
+						end
+					end
+
 					if KRT_Spammer.showSlots ~= false then
 						local total = tank + healer + melee + ranged
 						local max = 10
@@ -3458,18 +3528,10 @@ do
 							_G[frameName.."Output"]:SetTextColor(1.0, 0.0, 0.0)
 							_G[frameName.."Length"]:SetText(total.."/"..max)
 							_G[frameName.."Length"]:SetTextColor(1.0, 0.0, 0.0)
+							Spammer:LayoutBottom()
 							return
 						end
 						temp = temp .. " ("..max-(total or 0).."/"..max..")"
-					end
-
-					if KRT_Spammer.gsAchNeeded then
-						local minGS = _G[frameName.."MinGS"]:GetText():trim()
-						if minGS ~= "" then
-							temp = temp .. " +" .. minGS .. " - /w gs+ach"
-						else
-							temp = temp .. " - /w gs+ach"
-						end
 					end
 
 					_G[frameName.."Output"]:SetText(temp)
@@ -3491,6 +3553,8 @@ do
 					_G[frameName.."Length"]:SetTextColor(0.0, 1.0, 0.0)
 					_G[frameName.."Message"]:SetMaxLetters(255)
 				end
+
+				Spammer:LayoutBottom()
 
 				-- Set set duration:
 				duration = _G[frameName.."Duration"]:GetText()
@@ -3662,6 +3726,7 @@ do
 
 	-- OnUpdate frame:
 	function UpdateUIFrame(self, elapsed)
+		if not UILogger or not UILogger:IsShown() then return end
 		LocalizeUIFrame()
 		if Utils.periodic(self, frameName, updateInterval, elapsed) then
 			if Logger.selectedRaid == nil then
@@ -3739,6 +3804,7 @@ do
 			}
 			EasyMenu(menuList, itemMenu, "cursor", 0 , 0, "MENU")
 		end
+		addon.Logger.OpenItemMenu = OpenItemMenu
 
 		-- Select an item:
 		function Logger:SelectItem(btn, button)
@@ -3809,7 +3875,7 @@ do
 			OnHide = function(self) self.itemId = nil end,
 			OnAccept = function(self)
 				local rollType = self.editBox:GetNumber()
-				if rollType > 0 and rollType <= 7 then
+				if rollType > 0 and rollType <= 8 then
 					addon:Log(self.itemId, nil, rollType)
 					addon.Logger.Loot:Fetch()
 				end
@@ -3889,6 +3955,7 @@ do
 
 	-- OnUpdate frame:
 	function UpdateUIFrame(self, elapsed)
+		if not UILogger or not UILogger:IsShown() then return end
 		LocalizeUIFrame()
 		if Utils.periodic(self, frameName, updateInterval, elapsed) then
 			selectedRaid = addon.Logger.selectedRaid
@@ -4126,6 +4193,7 @@ do
 
 	-- OnUpdate frame:
 	function UpdateUIFrame(self, elapsed)
+		if not UILogger or not UILogger:IsShown() then return end
 		LocalizeUIFrame()
 		selectedRaid = addon.Logger.selectedRaid
 		selectedBoss = addon.Logger.selectedBoss
@@ -4215,12 +4283,18 @@ do
 			if not selectedBoss then return end
 			local raid = KRT_Raids[selectedRaid]
 			if not raid or not raid.bossKills[selectedBoss] then return end
-			-- We remove the raid boss first:
-			tremove(raid.bossKills, selectedBoss)
-			-- We delete all the loot from the boss:
-			for i, l in ipairs(raid.loot) do
-				if l.bossNum == selectedBoss then
+			-- Delete loot from this boss (reverse iterate to avoid index issues):
+			for i = #raid.loot, 1, -1 do
+				if raid.loot[i].bossNum == selectedBoss then
 					tremove(raid.loot, i)
+				end
+			end
+			-- Remove the boss:
+			tremove(raid.bossKills, selectedBoss)
+			-- Adjust bossNum for loot entries referencing bosses after the deleted one:
+			for _, l in ipairs(raid.loot) do
+				if l.bossNum and l.bossNum > selectedBoss then
+					l.bossNum = l.bossNum - 1
 				end
 			end
 			fetched = false
@@ -4335,6 +4409,7 @@ do
 
 	-- OnUpdate frame:
 	function UpdateUIFrame(self, elapsed)
+		if not UILogger or not UILogger:IsShown() then return end
 		LocalizeUIFrame()
 		selectedRaid = addon.Logger.selectedRaid
 		selectedBoss = addon.Logger.selectedBoss
@@ -4411,32 +4486,29 @@ do
 	-- Delete a boss attendee:
 	do
 		local function DeleteAttendee()
-			if not selectedPlayer then return end
+			if not selectedBossPlayer then return end
 			local raid = KRT_Raids[selectedRaid]
-			if not raid or not raid.bossKills[selectedPlayer] then return end
-			-- We remove the raid boss first:
-			table.remove(raid.bossKills, selectedPlayer)
-			-- We delete all the loot from the boss:
-			for i, l in ipairs(raid.loot) do
-				if l.bossNum == selectedPlayer then
-					tremove(raid.loot, i)
-				end
-			end
+			if not raid or not raid.bossKills[selectedBoss] then return end
+			local players = raid.bossKills[selectedBoss].players
+			if not players then return end
+			local playerName = players[selectedBossPlayer]
+			if not playerName then return end
+			Utils.removeEntry(players, playerName)
 			fetched = false
 		end
 
 		-- Handles the click on the delete button:
 		function BossAttendees:Delete(btn)
-			if btn and selectedPlayer ~= nil then
-				StaticPopup_Show("KRTLOGGER_DELETE_ATTENDEE")
+			if btn and selectedBossPlayer ~= nil then
+				StaticPopup_Show("KRTLOGGER_DELETE_BOSS_ATTENDEE")
 			end
 		end
-		StaticPopupDialogs["KRTLOGGER_DELETE_ATTENDEE"] = {
+		StaticPopupDialogs["KRTLOGGER_DELETE_BOSS_ATTENDEE"] = {
 			text         = L.StrConfirmDeleteAttendee,
 			button1      = L.BtnOK,
 			button2      = CANCEL,
 			OnAccept     = function() DeleteAttendee() end,
-			cancels      = "KRTLOGGER_DELETE_ATTENDEE",
+			cancels      = "KRTLOGGER_DELETE_BOSS_ATTENDEE",
 			timeout      = 0,
 			whileDead    = 1,
 			hideOnEscape = 1,
@@ -4503,15 +4575,12 @@ do
 			_G[frameName.."HeaderJoin"]:SetText(L.StrJoin)
 			_G[frameName.."HeaderLeave"]:SetText(L.StrLeave)
 		end
-		-- FIXME: disable buttons for now
-		_G[frameName.."AddBtn"]:Disable()
-		_G[frameName.."DeleteBtn"]:Disable()
-
 		localized = true
 	end
 
 	-- OnUpdate frame:
 	function UpdateUIFrame(self, elapsed)
+		if not UILogger or not UILogger:IsShown() then return end
 		LocalizeUIFrame()
 		selectedRaid = addon.Logger.selectedRaid
 		selectedPlayer = addon.Logger.selectedPlayer
@@ -4522,12 +4591,14 @@ do
 			end
 			-- Highlight selected raid:
 			for i, p in ipairs(playersTable) do
-				if selectedPlayer and p.id == selectedPlayer and _G[frameName.."PlayerBtn"..i] then
-					_G[frameName.."PlayerBtn"..i]:LockHighlight()
-				elseif _G[frameName.."PlayerBtn"..i] then
-					_G[frameName.."PlayerBtn"..i]:UnlockHighlight()
+				if selectedPlayer and p.id == selectedPlayer and _G[frameName.."PlayerBtn"..p.id] then
+					_G[frameName.."PlayerBtn"..p.id]:LockHighlight()
+				elseif _G[frameName.."PlayerBtn"..p.id] then
+					_G[frameName.."PlayerBtn"..p.id]:UnlockHighlight()
 				end
 			end
+			Utils.enableDisable(_G[frameName.."AddBtn"], selectedRaid)
+			Utils.enableDisable(_G[frameName.."DeleteBtn"], selectedRaid and selectedPlayer)
 		end
 	end
 
@@ -4547,8 +4618,9 @@ do
 		end
 	end
 
-	-- Fetch bosses list:
+	-- Fetch raid attendees list:
 	function RaidAttendees:Fetch()
+		ResetList()
 		local scrollFrame = _G[frameName.."ScrollFrame"]
 		local scrollChild = _G[frameName.."ScrollFrameScrollChild"]
 		local totalHeight = 0
@@ -4580,35 +4652,38 @@ do
 		addon:PrintInfo("Coming soon...")
 	end
 
-	-- Delete a boss:
+	-- Delete a raid attendee:
 	do
 		local function DeleteAttendee()
 			if not selectedPlayer then return end
 			local raid = KRT_Raids[selectedRaid]
-			if not raid or not raid.bossKills[selectedPlayer] then return end
-			-- We remove the raid boss first:
-			table.remove(raid.bossKills, selectedPlayer)
-			-- We delete all the loot from the boss:
-			for i, l in ipairs(raid.loot) do
-				if l.bossNum == selectedPlayer then
-					tremove(raid.loot, i)
+			if not raid then return end
+			local players = raid.players
+			if not players or not players[selectedPlayer] then return end
+			local playerName = players[selectedPlayer].name
+			-- Remove from all boss kill lists:
+			for _, boss in ipairs(raid.bossKills) do
+				if boss.players then
+					Utils.removeEntry(boss.players, playerName)
 				end
 			end
+			-- Remove from raid:
+			tremove(players, selectedPlayer)
 			fetched = false
 		end
 
 		-- Handles the click on the delete button:
 		function RaidAttendees:Delete(btn)
 			if btn and selectedPlayer ~= nil then
-				StaticPopup_Show("KRTLOGGER_DELETE_ATTENDEE")
+				StaticPopup_Show("KRTLOGGER_DELETE_RAID_ATTENDEE")
 			end
 		end
-		StaticPopupDialogs["KRTLOGGER_DELETE_ATTENDEE"] = {
+		StaticPopupDialogs["KRTLOGGER_DELETE_RAID_ATTENDEE"] = {
 			text         = L.StrConfirmDeleteAttendee,
 			button1      = L.BtnOK,
 			button2      = CANCEL,
 			OnAccept     = function() DeleteAttendee() end,
-			cancels      = "KRTLOGGER_DELETE_ATTENDEE",
+			cancels      = "KRTLOGGER_DELETE_RAID_ATTENDEE",
 			timeout      = 0,
 			whileDead    = 1,
 			hideOnEscape = 1,
@@ -4696,17 +4771,14 @@ do
 			_G[frameName.."HeaderTime"]:SetText(L.StrTime)
 		end
 
-		-- FIXME: disable buttons for now
 		_G[frameName.."ExportBtn"]:Disable()
-		_G[frameName.."ClearBtn"]:Disable()
-		_G[frameName.."AddBtn"]:Disable()
-		_G[frameName.."EditBtn"]:Disable()
 
 		localized = true
 	end
 
 	-- OnUpdate frame:
 	function UpdateUIFrame(self, elapsed)
+		if not UILogger or not UILogger:IsShown() then return end
 		LocalizeUIFrame()
 		selectedRaid = addon.Logger.selectedRaid
 		selectedBoss = addon.Logger.selectedBoss
@@ -4718,15 +4790,17 @@ do
 				InitLootList()
 				Loot:Fetch()
 			end
-			-- Highlight selected raid:
-			for i, v in ipairs(raidLoot) do
-				if selectedItem and selectedItem == v.id and _G[frameName.."ItemBtn"..i] then
-					_G[frameName.."ItemBtn"..i]:LockHighlight()
-				elseif _G[frameName.."ItemBtn"..i] then
-					_G[frameName.."ItemBtn"..i]:UnlockHighlight()
+			-- Highlight selected item:
+			for i, v in ipairs(lootTable) do
+				if selectedItem and selectedItem == v.id and _G[frameName.."ItemBtn"..v.id] then
+					_G[frameName.."ItemBtn"..v.id]:LockHighlight()
+				elseif _G[frameName.."ItemBtn"..v.id] then
+					_G[frameName.."ItemBtn"..v.id]:UnlockHighlight()
 				end
 			end
 			Utils.enableDisable(_G[frameName.."DeleteBtn"], selectedItem)
+			Utils.enableDisable(_G[frameName.."EditBtn"], selectedItem)
+			Utils.enableDisable(_G[frameName.."ClearBtn"], selectedRaid and #lootTable > 0)
 		end
 	end
 
@@ -4807,18 +4881,20 @@ do
 				return (a.looter > b.looter)
 			end,
 			type = function(a, b)
-				if not a.rollType or not b.rollType then return end
+				local at = a.rollType or 0
+				local bt = b.rollType or 0
 				if ascending then
-					return (lootTypesColored[a.rollType] < lootTypesColored[b.rollType])
+					return (at < bt)
 				end
-				return (lootTypesColored[a.rollType] > lootTypesColored[b.rollType])
+				return (at > bt)
 			end,
 			roll = function(a, b)
-				if not a.rollValue and not b.rollValue then return end
+				local av = a.rollValue or 0
+				local bv = b.rollValue or 0
 				if ascending then
-					return (a.rollValue < b.rollValue)
+					return (av < bv)
 				end
-				return (a.rollValue > b.rollValue)
+				return (av > bv)
 			end,
 			time = function(a, b)
 				if ascending then
@@ -4839,7 +4915,9 @@ do
 
 	function Loot:OnEnter(btn)
 		if not btn then return end
-		local iID = btn:GetParent():GetID()
+		local parent = btn:GetParent()
+		if not parent then return end
+		local iID = parent:GetID()
 		if not raidLoot[iID] then return end
 		GameTooltip:SetOwner(btn, "ANCHOR_CURSOR")
 		GameTooltip:SetHyperlink(raidLoot[iID].itemString)
@@ -4850,9 +4928,6 @@ do
 		local function DeleteItem()
 			if selectedRaid and KRT_Raids[selectedRaid] then
 				tremove(KRT_Raids[selectedRaid].loot, selectedItem)
-				if _G[frameName.."ItemBtn"..selectedRaid] then
-					_G[frameName.."ItemBtn"..selectedRaid]:Hide()
-				end
 				addon.Logger.selectedItem = nil
 				fetched = false
 			end
@@ -4874,6 +4949,41 @@ do
 			whileDead    = 1,
 			hideOnEscape = 1,
 		}
+	end
+
+	-- Clear all loot for the selected raid:
+	function Loot:Clear(btn)
+		if not btn then return end
+		StaticPopup_Show("KRTLOGGER_CLEAR_LOOT")
+	end
+	StaticPopupDialogs["KRTLOGGER_CLEAR_LOOT"] = {
+		text         = L.StrConfirmClearAll,
+		button1      = L.BtnOK,
+		button2      = CANCEL,
+		OnAccept     = function()
+			if selectedRaid and KRT_Raids[selectedRaid] then
+				KRT_Raids[selectedRaid].loot = {}
+				addon.Logger.selectedItem = nil
+				fetched = false
+			end
+		end,
+		cancels      = "KRTLOGGER_CLEAR_LOOT",
+		timeout      = 0,
+		whileDead    = 1,
+		hideOnEscape = 1,
+	}
+
+	-- Edit selected item (open the right-click menu):
+	function Loot:Edit(btn)
+		if not btn then return end
+		if not selectedItem then return end
+		addon.Logger.OpenItemMenu(btn)
+	end
+
+	-- Add is not applicable for loot history (items are auto-logged):
+	function Loot:Add(btn)
+		if not btn then return end
+		addon:PrintInfo("Loot items are auto-logged from Master Looter.")
 	end
 
 	-- Reset fetch status callback:

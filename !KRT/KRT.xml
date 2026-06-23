@@ -480,44 +480,44 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="$parentChannelYellStr" inherits="GameFontHighlightSmall" text="YELL" justifyH="LEFT" justifyV="BOTTOM">
-					<Size><AbsDimension x="35" y="18" /></Size>
-					<Anchors>
-						<Anchor point="LEFT" relativeTo="$parentChannelGuildStr" relativePoint="RIGHT">
-							<Offset><AbsDimension x="17" y="0" /></Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-				<FontString name="$parentPreviewStr" inherits="GameFontNormal" text="Preview" justifyH="LEFT" justifyV="BOTTOM">
-					<Size><AbsDimension x="55" y="18" /></Size>
-					<Anchors>
-						<Anchor point="TOPLEFT" >
-							<Offset><AbsDimension x="20" y="-364" /></Offset>
-						</Anchor>
-						<Anchor point="TOPRIGHT" >
-							<Offset><AbsDimension x="-15" y="-364" /></Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-				<FontString name="$parentOutput" inherits="GameFontHighlightSmall" text="Start typing to see the final message." justifyH="LEFT" justifyV="TOP">
-					<Size><AbsDimension x="218" y="0" /></Size>
-					<Anchors>
-						<Anchor point="TOPLEFT">
-							<Offset><AbsDimension x="20" y="-384" /></Offset>
-						</Anchor>
-						<Anchor point="BOTTOMRIGHT">
-							<Offset><AbsDimension x="-15" y="15" /></Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-				<FontString name="$parentLength" inherits="KRTFontStringGray" text="0/255" justifyH="RIGHT" justifyV="TOP">
-					<Size><AbsDimension x="55" y="18" /></Size>
-					<Anchors>
-						<Anchor point="TOPRIGHT" >
-							<Offset><AbsDimension x="-15" y="-364" /></Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
+			<FontString name="$parentChannelYellStr" inherits="GameFontHighlightSmall" text="YELL" justifyH="LEFT" justifyV="BOTTOM">
+				<Size><AbsDimension x="35" y="18" /></Size>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentChannelGuildStr" relativePoint="RIGHT">
+						<Offset><AbsDimension x="17" y="0" /></Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<FontString name="$parentPreviewStr" inherits="GameFontNormal" text="Preview" justifyH="LEFT" justifyV="BOTTOM">
+				<Size><AbsDimension x="55" y="18" /></Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" >
+						<Offset><AbsDimension x="20" y="-364" /></Offset>
+					</Anchor>
+					<Anchor point="TOPRIGHT" >
+						<Offset><AbsDimension x="-15" y="-364" /></Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<FontString name="$parentOutput" inherits="GameFontHighlightSmall" text="Start typing to see the final message." justifyH="LEFT" justifyV="TOP">
+				<Size><AbsDimension x="218" y="0" /></Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset><AbsDimension x="20" y="-384" /></Offset>
+					</Anchor>
+					<Anchor point="BOTTOMRIGHT">
+						<Offset><AbsDimension x="-15" y="15" /></Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<FontString name="$parentLength" inherits="KRTFontStringGray" text="0/255" justifyH="RIGHT" justifyV="TOP">
+				<Size><AbsDimension x="55" y="18" /></Size>
+				<Anchors>
+					<Anchor point="TOPRIGHT" >
+						<Offset><AbsDimension x="-15" y="-364" /></Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
 			</Layer>
 		</Layers>
 		<Frames>
@@ -739,24 +739,24 @@
 					</Anchor>
 				</Anchors>
 			</CheckButton>
-			<CheckButton name="$parentShowSlots" inherits="InterfaceOptionsCheckButtonTemplate">
-				<Size><AbsDimension x="20" y="20" /></Size>
-				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset><AbsDimension x="15" y="-317" /></Offset>
-					</Anchor>
-				</Anchors>
-				<Scripts><OnClick>KRT.Spammer:Save(self, button)</OnClick></Scripts>
-			</CheckButton>
-			<CheckButton name="$parentGsAchNeeded" inherits="InterfaceOptionsCheckButtonTemplate">
-				<Size><AbsDimension x="20" y="20" /></Size>
-				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset><AbsDimension x="15" y="-341" /></Offset>
-					</Anchor>
-				</Anchors>
-				<Scripts><OnClick>KRT.Spammer:Save(self, button)</OnClick></Scripts>
-			</CheckButton>
+		<CheckButton name="$parentShowSlots" inherits="InterfaceOptionsCheckButtonTemplate">
+			<Size><AbsDimension x="20" y="20" /></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="$parentChat7" relativePoint="BOTTOMLEFT">
+					<Offset><AbsDimension x="-10" y="-8" /></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts><OnClick>KRT.Spammer:Save(self, button)</OnClick></Scripts>
+		</CheckButton>
+		<CheckButton name="$parentGsAchNeeded" inherits="InterfaceOptionsCheckButtonTemplate">
+			<Size><AbsDimension x="20" y="20" /></Size>
+			<Anchors>
+				<Anchor point="TOPLEFT" relativeTo="$parentShowSlots" relativePoint="BOTTOMLEFT">
+					<Offset><AbsDimension x="0" y="-3" /></Offset>
+				</Anchor>
+			</Anchors>
+			<Scripts><OnClick>KRT.Spammer:Save(self, button)</OnClick></Scripts>
+		</CheckButton>
 		</Frames>
 		<Scripts><OnLoad>KRT.Spammer:OnLoad(self)</OnLoad></Scripts>
 	</Frame>
@@ -2163,6 +2163,7 @@
 								<Offset><AbsDimension x="3" y="0" /></Offset>
 							</Anchor>
 						</Anchors>
+						<Scripts><OnClick>KRT.Logger.Loot:Clear(self, button)</OnClick></Scripts>
 					</Button>
 					<Button name="$parentAddBtn" inherits="KRTButtonTemplate" text="ADD">
 						<Size><AbsDimension x="65" y="25" /></Size>
@@ -2171,6 +2172,7 @@
 								<Offset><AbsDimension x="53" y="0" /></Offset>
 							</Anchor>
 						</Anchors>
+						<Scripts><OnClick>KRT.Logger.Loot:Add(self, button)</OnClick></Scripts>
 					</Button>
 					<Button name="$parentEditBtn" inherits="KRTButtonTemplate" text="Edit">
 						<Size><AbsDimension x="65" y="25" /></Size>
@@ -2179,6 +2181,7 @@
 								<Offset><AbsDimension x="3" y="0" /></Offset>
 							</Anchor>
 						</Anchors>
+						<Scripts><OnClick>KRT.Logger.Loot:Edit(self, button)</OnClick></Scripts>
 					</Button>
 					<Button name="$parentDeleteBtn" inherits="KRTButtonTemplate" text="DELETE">
 						<Size><AbsDimension x="65" y="25" /></Size>
